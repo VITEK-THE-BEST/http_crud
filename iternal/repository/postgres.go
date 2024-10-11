@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -19,12 +20,12 @@ func init() {
 	}
 }
 
-type Database struct {
+type PostgresBase struct {
 	db *bun.DB
 }
 
-func NewDatabase() (*Database, error) {
-	dsn := fmt.Sprintf("%s:%s@%s:%s/%s?sslmode=disable",
+func NewPostgresBase() *PostgresBase {
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		os.Getenv("DB_USERNAME"),
 		os.Getenv("DB_PASSWORD"),
 		os.Getenv("DB_HOST"),
@@ -34,6 +35,9 @@ func NewDatabase() (*Database, error) {
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
 
 	db := bun.NewDB(sqldb, pgdialect.New())
-
-	return &Database{db: db}, nil
+	log.Println("Подключение к бд установлено!")
+	return &PostgresBase{db: db}
+}
+func (d *PostgresBase) ResetModel(ctx context.Context, models ...interface{}) error {
+	return d.db.ResetModel(ctx, models...)
 }
