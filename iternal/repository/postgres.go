@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 
+	"my-crud/iternal/models"
+
 	"github.com/joho/godotenv"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
@@ -38,6 +40,21 @@ func NewPostgresBase() *PostgresBase {
 	log.Println("Подключение к бд установлено!")
 	return &PostgresBase{db: db}
 }
+
 func (d *PostgresBase) ResetModel(ctx context.Context, models ...interface{}) error {
 	return d.db.ResetModel(ctx, models...)
+}
+
+func (d *PostgresBase) CreateUser(user models.User) error {
+	_, err := d.db.NewInsert().Model(&user).Exec(context.Background())
+	return err
+}
+
+func (d *PostgresBase) GetUsers() ([]models.User, error) {
+	var users []models.User
+	err := d.db.NewSelect().Model(&users).Where("id = 1").Scan(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }
